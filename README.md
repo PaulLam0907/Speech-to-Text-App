@@ -16,7 +16,7 @@ Written purely in Python
 ## Installation
 1. Clone the repository :
 ```bash
-git clone https://github.com/PaulLam0907/speech-to-text-app.git
+git clone https://github.com/PaulLam0907/Speech-to-Text-App.git
 ```
 
 2. Install dependencies :
@@ -47,4 +47,4 @@ python main.py
 ## License
 MIT License
 
-![Build Status](https://travis-ci.org/PaulLam0907/speech-to-text-app.svg?branch=main)
+![Build Status](https://travis-ci.org/PaulLam0907/Speech-to-Text-App.svg?branch=main)
