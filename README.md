@@ -1,7 +1,8 @@
 # Speech-to-Text-App
 
 Web application to convert audio's speech into text  
-Written purely in Python
+Written purely in Python  
+Transcription credit to Whisper `openai-whisper` by OpenAI
 
 ## Table of Contents
 - [Features](#features)
