@@ -6,6 +6,7 @@ import datetime
 # Detect if running as a packaged cx_Freeze executable or raw python script
 if getattr(sys, "frozen", False):
     dir_path = os.path.dirname(sys.executable) # Root folder of your built .exe
+    
 else:
     dir_path = os.path.dirname(os.path.realpath(__file__)) # Dev folder
 
@@ -38,7 +39,7 @@ class SpeechToText:
         
     def get_available_language(self):
         return whisper.tokenizer.LANGUAGES.items()
-            
+        
     def get_loaded_model(self):
         """
         Get list of downloaded model
@@ -54,7 +55,7 @@ class SpeechToText:
                 models.append(item)
                 
         return models
-            
+        
     def remove_loaded_model(self, model_name):
         """
         Delete downloaded model
@@ -71,7 +72,7 @@ class SpeechToText:
         Model  | Relative Speed |  VRAM  | Best Use Case | English Only Version
         tiny   |      10x       |  ~1GB  | lower accuracy | tiny.en
         base   |       7x       |  ~1GB  | typical usage | base.en
-        small  |       4x       |  ~2GB  | Standard everyday transcription; higher accuracy for multi-lingual | small.en
+        small  |       4x       |  ~2GB  | Standard everyday transcription | small.en
         medium |       2x       |  ~5GB  | High-quality needs; Heavy accents; higher accuracy for multi-lingual | medium.en
         large  |       1x       | ~10GB  | Maximum accuracy; Complex & technical terminology; translation | Multilingual only
         turbo  |       8x       |  ~6GB  | accuracy=large; speed=tiny | Multilingual only
@@ -83,14 +84,24 @@ class SpeechToText:
         
         return whisper.load_model(model_name)
     
-    def transcribe(self, audio_file_name, model_name, language = "en", initial_prompt = "Hello, this audio contains both English and 中文 text."):
+    def transcribe(self,
+                   audio_file_name,
+                   model_name,
+                   language = "en",
+                   initial_prompt = None,
+                   condition_on_previous_text = True,
+                   temperature = (0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
+                   no_speech_threshold = 0.6):
         """
         Transcribe audio into text
         
         :param audio_file_name: str, file name of audio file
         :param model_name: str, name of model for transcribing e.g. base (without .pt)
-        :param language: main language of the audio's speech
+        :param language: str, main language of the audio's speech
         :param initial_prompt: str, to tailor transcription process e.g. spelling technical vocabulary, enforcing formatting and punctuation, fixing capitalization styles, etc.
+        :param condition_on_previous_text: bool, True : use previous transcript as context for next 30s; False : transcribe independently without acknowledging previous step e.g. reset the punctuation logic for each 30s chunk
+        :param temperature: float [0, 1], randomness and creativity of the model's transcription generation; scale the probability scores during decoding; low temperature = deterministic, accurate, no hallucinations; high temperature = creative
+        :param no_speech_threshold: float [0, 1], how sensitive the model is to silence; if detected probability for no-speech audio segment exceed this value, the audio segment is considered silence and skipped; lower value (0.3) for duo-lingual audio; 0 = sensitive to silence and skip segment; 1 = sensitive to speech and keep segment
         :return: whisper.load_model().transcribe()
         """
         self.audio_file_name = audio_file_name
@@ -104,9 +115,11 @@ class SpeechToText:
         result = model.transcribe(
                 self.audio_file_name,
                 language = language,  # main language is english
-                initial_prompt = initial_prompt,  # occasionally contain chinese
-                condition_on_previous_text = False,  # reset the punctuation logic for each 30s chunk
-                verbose = False  # True : show the real-time text decoding process; False : enable progress bar; None : silent
+                initial_prompt = initial_prompt,
+                verbose = False,  # True : show the real-time text decoding process; False : enable progress bar; None : silent
+                condition_on_previous_text = condition_on_previous_text,
+                temperature = temperature,  # 0.0
+                no_speech_threshold = no_speech_threshold,  # 0.3
         )
         print("Done")
         
