@@ -3,6 +3,24 @@ import shutil
 from pathlib import Path
 import tempfile
 import streamlit as st
+# widgets
+# https://docs.streamlit.io/develop/api-reference/widgets
+# text elements
+# https://docs.streamlit.io/develop/api-reference/text
+# data elements
+# https://docs.streamlit.io/develop/api-reference/data
+# chart elements
+# https://docs.streamlit.io/develop/api-reference/charts
+# media elements
+# https://docs.streamlit.io/develop/api-reference/media
+# layouts and containers
+# https://docs.streamlit.io/develop/api-reference/layout
+# chat elements
+# https://docs.streamlit.io/develop/api-reference/chat
+# display progress and status
+# https://docs.streamlit.io/develop/api-reference/status
+# theming
+# https://docs.streamlit.io/develop/concepts/configuration/theming
 
 import transcribe
 transcriber = transcribe.SpeechToText()
@@ -13,7 +31,10 @@ st.header("Transcribe audio speech into text")
 
 # file upload
 st.subheader("1. Select Audio File")
-file = st.file_uploader("Audio file to transcribe")
+file = st.file_uploader(
+        "Audio file to transcribe",
+        accept_multiple_files = False
+)
 
 # model used for transcription
 st.subheader("2. Select a Model")
@@ -24,12 +45,12 @@ models_descriptions = [
     "Standard everyday transcription",
     "High-quality needs. Heavy accents. Higher accuracy for multi-lingual",
     "Maximum accuracy. Complex & technical terminology. Translation",
-    "accuracy = large; speed = tiny"
+    "accuracy = large; speed = tiny; Real-time transcription with low latency"
 ]
 model = st.selectbox(
         "Choose a model :",
         options = models,
-        index = 3,
+        index = 1,
         help = "This model is used to transcribe your audio"
 )
 st.caption("Usage : " + models_descriptions[models.index(model)])
@@ -42,7 +63,7 @@ with st.popover("How to choose the suitable model ?"):
         "Model": ["tiny", "base", "small", "medium", "large", "turbo"],
         "Relative Speed": ["10x", "7x", "4x", "2x", "1x", "8x"],
         "VRAM": ["~1GB", "~1GB", "~2GB", "~5GB", "~10GB", "~6GB"],
-        "Best Use Case": ["Lower accuracy", "Typical usage", "Standard everyday transcription", "High-quality needs; Heavy accents; Higher accuracy for multi-lingual", "Maximum accuracy; Complex & technical terminology; Translation", "accuracy = large; speed = tiny"],
+        "Best Use Case": ["Lower accuracy", "Typical usage", "Standard everyday transcription", "High-quality needs; Heavy accents; Higher accuracy for multi-lingual", "Maximum accuracy; Complex & technical terminology; Translation", "accuracy = large; speed = tiny; Real-time transcription with low latency"],
         "English-only Version": ["tiny.en", "base.en", "small.en", "medium.en", "Multilingual only", "Multilingual only"]
     })
 
@@ -61,7 +82,7 @@ with st.expander("Remove Downloaded Model"):
             transcriber.remove_loaded_model(downloaded_model[:-3])
             st.info(f"Removed {downloaded_model}")
 
-# advanced settings
+# settings
 st.subheader("3. Settings")
 
 language = st.selectbox(
@@ -70,17 +91,18 @@ language = st.selectbox(
         help = "Main language of the audio's speech"
 )
 
+# advanced settings
 with st.expander("Advanced Settings"):
     
     initial_prompt = st.toggle(
             "Initial Prompt",
-            value = True,
+            value = False,
             help = "To tailor transcription process : spelling technical vocabulary, enforcing formatting and punctuation, fixing capitalization styles, etc."
     )
     
     if initial_prompt:
         initial_prompt = st.selectbox(
-                "",
+                " ",
                 label_visibility = "collapsed",
                 options = [
                     "Hello, welcome to our presentation. 你好，歡迎來到我們的演講。 Today we will discuss the project. 今天我們將討論這個項目。",  # english and chinese back and forth
@@ -97,7 +119,7 @@ with st.expander("Advanced Settings"):
     condition_on_previous_text = st.toggle(
             "Condition on Previous Text",
             value = True,
-            help = "True : use previous transcript as context for next 30s;  \nFalse : transcribe independently without acknowledging previous step"
+            help = "True : use previous transcript as context for next 30s; initial prompt becomes less effective;  \nFalse : transcribe independently without acknowledging previous step"
     )
     temperature = st.toggle(
             "Temperature",
@@ -107,7 +129,7 @@ with st.expander("Advanced Settings"):
     
     if temperature:
         temperature = st.number_input(
-                "",
+                " ",
                 label_visibility = "collapsed",
                 min_value = 0.0,
                 max_value = 1.0,
@@ -121,7 +143,7 @@ with st.expander("Advanced Settings"):
         temperature = (0.0, 0.2, 0.4, 0.6, 0.8, 1.0)
     
     no_speech_threshold = st.number_input(
-            "No Speech Threshold",
+            "No-speech Threshold",
             min_value = 0.0,
             max_value = 1.0,
             step = 0.1,
@@ -155,7 +177,7 @@ if st.button("Transcribe"):
         output_file_location = str(Path(os.path.expanduser("~")) / "Downloads")
         
         # transcribe
-        with st.spinner("Transcribing audio . . . this may take a few minutes . . ."):
+        with st.spinner("Transcribing audio . . . this may take several minutes . . ."):
             result = transcriber.transcribe(
                     temp_file_path,
                     model,

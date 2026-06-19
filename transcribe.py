@@ -75,7 +75,7 @@ class SpeechToText:
         small  |       4x       |  ~2GB  | Standard everyday transcription | small.en
         medium |       2x       |  ~5GB  | High-quality needs; Heavy accents; higher accuracy for multi-lingual | medium.en
         large  |       1x       | ~10GB  | Maximum accuracy; Complex & technical terminology; translation | Multilingual only
-        turbo  |       8x       |  ~6GB  | accuracy=large; speed=tiny | Multilingual only
+        turbo  |       8x       |  ~6GB  | accuracy=large; speed=tiny; real-time transcription with low latency | Multilingual only
         
         :param model_name: name of the model e.g. base (without .pt)
         :return: whisper.load_model()
@@ -115,8 +115,9 @@ class SpeechToText:
         result = model.transcribe(
                 self.audio_file_name,
                 language = language,  # main language is english
+                # task = "transcribe",  # transcribe only, do not translate
                 initial_prompt = initial_prompt,
-                verbose = False,  # True : show the real-time text decoding process; False : enable progress bar; None : silent
+                verbose = True,  # True : show the real-time text decoding process; False : enable progress bar; None : silent todo
                 condition_on_previous_text = condition_on_previous_text,
                 temperature = temperature,  # 0.0
                 no_speech_threshold = no_speech_threshold,  # 0.3
